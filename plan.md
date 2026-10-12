@@ -79,3 +79,12 @@ A compact wordmark with a two-line “I / P” signal mark: two offset vertical 
 ### Signature brand color
 
 **Pilot Lime `#D7F36B`.** It belongs to InstaPilot’s own approval and readiness language.
+
+
+## Revised provider and agent architecture
+
+ScrapeCreators is the public-data research provider. Its server-only adapter covers verified endpoints for profiles, post/Reel details, comments, native search, popular topic search, and keyword Reels discovery. All responses carry provider/source/freshness metadata and are stored in workspace-scoped public media/comment tables. The adapter never exposes its API key to the browser and never grants publishing rights.
+
+LangChain.js with `createAgent`, `@langchain/groq`, and the public-data tools coordinates context retrieval, deterministic-first comment classification, brand-voice analysis, and draft generation. The application approval queue remains the publishing gate. Meta’s authorized API seam is the only route that can publish replies, and it requires explicit confirmation plus idempotency. LangGraph can be added for durable resumable runs and human-in-the-loop interrupts once persistence is enabled for long-running agent jobs.
+
+See `docs/integration-research.md` for the endpoint matrix, limitations, and source links.

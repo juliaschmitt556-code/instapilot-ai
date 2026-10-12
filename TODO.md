@@ -8,3 +8,11 @@
 - **Automation and auditability:** Add per-account manual/approval/automatic modes, rate limits, safety rules, pause-all, retry limits, priority routing, notifications, webhook verification, structured logs, and immutable audit records.
 - **Analytics and reporting:** Persist advertising and organic metrics separately, define calculations and missing-data semantics, avoid double-counting, and export CSV reports.
 - **Production hardening:** Add CSRF protection where applicable, production rate limiting, signed webhook verification, migration runner, integration tests against approved mocks, deployment config, data export/deletion, Meta data-deletion callback, monitoring, and app review documentation.
+
+
+## Public research and agent integration
+
+- Provide server-side ScrapeCreators adapters and routes for public Instagram profile retrieval, post/Reel detail retrieval, available comments with cursor pagination, native search, popular topic search, and keyword Reels discovery; return provider provenance and clear configuration errors when the API key is absent.
+- Persist public media and comments with provider, source URL, collection time, freshness, and raw response provenance; do not treat public data as account ownership or publishing authorization.
+- Provide a LangChain.js + ChatGroq agent route that can retrieve public context, classify comments, apply brand voice and safety rules, generate drafts with provenance, and require approval before any Meta-authorized publish action.
+- Keep ScrapeCreators public ingestion separate from Meta-authorized publishing, with no automatic publishing from public-data lookups.

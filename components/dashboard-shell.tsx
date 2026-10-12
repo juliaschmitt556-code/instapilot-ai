@@ -44,8 +44,9 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Too
 import { BrandMark } from '@/components/brand-mark';
 import { campaigns, chartData, comments, metrics, replyDrafts, sampleAccount } from '@/lib/sample-data';
 import type { Campaign, CommentItem } from '@/lib/types';
+import { PublicResearch } from '@/components/public-research';
 
-export type DashboardSection = 'overview' | 'accounts' | 'ads' | 'comments' | 'ai-agent' | 'analytics' | 'notifications' | 'settings' | 'billing';
+export type DashboardSection = 'overview' | 'accounts' | 'ads' | 'comments' | 'ai-agent' | 'research' | 'analytics' | 'notifications' | 'settings' | 'billing';
 
 const navGroups = [
   { label: 'Operate', items: [
@@ -53,6 +54,7 @@ const navGroups = [
     { id: 'comments', label: 'Comments inbox', href: '/comments', icon: MessageCircle, badge: '24' },
     { id: 'ads', label: 'Ads manager', href: '/ads', icon: Megaphone },
     { id: 'analytics', label: 'Analytics', href: '/analytics', icon: BarChart3 },
+    { id: 'research', label: 'Public research', href: '/research', icon: Search },
   ] },
   { label: 'Configure', items: [
     { id: 'ai-agent', label: 'AI agent', href: '/ai-agent', icon: Bot, badge: 'Beta' },
@@ -147,6 +149,7 @@ export function DashboardShell({ activeSection = 'overview' }: { activeSection?:
     if (section === 'comments') return <CommentsView />;
     if (section === 'ads') return <AdsView setSection={setSection} />;
     if (section === 'analytics') return <AnalyticsView />;
+    if (section === 'research') return <PublicResearch />;
     if (section === 'accounts') return <AccountsView />;
     if (section === 'ai-agent') return <AgentView />;
     return <GenericView section={section} />;
