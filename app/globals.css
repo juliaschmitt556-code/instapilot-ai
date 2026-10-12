@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #0b1020;
+  --paper: #f5f3ee;
+  --paper-2: #eeece6;
+  --line: #deddd5;
+  --muted: #787b85;
+  --lime: #d7f36b;
+  --lime-deep: #b6d74c;
+  --indigo: #5d5fef;
+  --coral: #ff7b6b;
+  --sky: #d9ecff;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--paper); }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Space Grotesk', Inter, ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+::selection { background: var(--lime); color: var(--ink); }
+
+@layer components {
+  .eyebrow { @apply font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-[#7b7e88]; }
+  .mono { font-family: 'DM Mono', monospace; }
+  .surface { @apply rounded-[22px] border border-[#deddd5] bg-[#fbfaf7]; }
+  .surface-dark { @apply rounded-[22px] border border-white/10 bg-[#111629] text-white; }
+  .button-primary { @apply inline-flex items-center justify-center gap-2 rounded-full bg-[#0b1020] px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#252b45] focus:outline-none focus:ring-2 focus:ring-[#5d5fef] focus:ring-offset-2; }
+  .button-lime { @apply inline-flex items-center justify-center gap-2 rounded-full bg-[#d7f36b] px-4 py-2.5 text-sm font-semibold text-[#0b1020] transition hover:-translate-y-0.5 hover:bg-[#c7e75d] focus:outline-none focus:ring-2 focus:ring-[#5d5fef] focus:ring-offset-2; }
+  .button-ghost { @apply inline-flex items-center justify-center gap-2 rounded-full border border-[#deddd5] bg-transparent px-4 py-2.5 text-sm font-semibold text-[#0b1020] transition hover:-translate-y-0.5 hover:border-[#adb0ba] hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#5d5fef] focus:ring-offset-2; }
+  .tag { @apply inline-flex items-center gap-1 rounded-full border border-[#deddd5] bg-[#f5f3ee] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-[#71747e]; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
