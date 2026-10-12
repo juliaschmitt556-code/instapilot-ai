@@ -5,26 +5,33 @@
 
 :root {
   --ink: #0b1020;
-  --paper: #f5f3ee;
-  --paper-2: #eeece6;
-  --line: #deddd5;
-  --muted: #787b85;
+  --paper: #f7f8fb;
+  --paper-2: #eef1f6;
+  --line: #dde2eb;
+  --muted: #717887;
   --lime: #d7f36b;
-  --lime-deep: #b6d74c;
+  --lime-deep: #a8ca39;
   --indigo: #5d5fef;
   --coral: #ff7b6b;
   --sky: #d9ecff;
+  --shadow-sm: 0 10px 30px rgba(21, 29, 52, 0.06);
+  --shadow-md: 0 22px 70px rgba(21, 29, 52, 0.11);
 }
 
 * { box-sizing: border-box; }
 html { background: var(--paper); }
 body {
   margin: 0;
-  background: var(--paper);
+  min-width: 320px;
+  background:
+    radial-gradient(circle at 82% -8%, rgba(215, 243, 107, 0.18), transparent 30rem),
+    radial-gradient(circle at 8% 12%, rgba(93, 95, 239, 0.05), transparent 24rem),
+    var(--paper);
   color: var(--ink);
   font-family: 'Space Grotesk', Inter, ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
 button, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
 a { color: inherit; text-decoration: none; }
@@ -33,12 +40,18 @@ a { color: inherit; text-decoration: none; }
 @layer components {
   .eyebrow { @apply font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-[#7b7e88]; }
   .mono { font-family: 'DM Mono', monospace; }
-  .surface { @apply rounded-[22px] border border-[#deddd5] bg-[#fbfaf7]; }
-  .surface-dark { @apply rounded-[22px] border border-white/10 bg-[#111629] text-white; }
-  .button-primary { @apply inline-flex items-center justify-center gap-2 rounded-full bg-[#0b1020] px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#252b45] focus:outline-none focus:ring-2 focus:ring-[#5d5fef] focus:ring-offset-2; }
-  .button-lime { @apply inline-flex items-center justify-center gap-2 rounded-full bg-[#d7f36b] px-4 py-2.5 text-sm font-semibold text-[#0b1020] transition hover:-translate-y-0.5 hover:bg-[#c7e75d] focus:outline-none focus:ring-2 focus:ring-[#5d5fef] focus:ring-offset-2; }
-  .button-ghost { @apply inline-flex items-center justify-center gap-2 rounded-full border border-[#deddd5] bg-transparent px-4 py-2.5 text-sm font-semibold text-[#0b1020] transition hover:-translate-y-0.5 hover:border-[#adb0ba] hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#5d5fef] focus:ring-offset-2; }
-  .tag { @apply inline-flex items-center gap-1 rounded-full border border-[#deddd5] bg-[#f5f3ee] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-[#71747e]; }
+  .surface { @apply rounded-[22px] border border-[#dde2eb] bg-white/80; box-shadow: var(--shadow-sm); backdrop-filter: blur(14px); }
+  .surface-dark { @apply rounded-[22px] border border-white/10 bg-[#111629] text-white; box-shadow: 0 24px 70px rgba(11,16,32,.18); }
+  .button-primary { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-[#0b1020] px-4 py-2.5 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#252b45] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#5d5fef] focus:ring-offset-2; }
+  .button-lime { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-[#d7f36b] px-4 py-2.5 text-sm font-semibold text-[#0b1020] transition duration-200 hover:-translate-y-0.5 hover:bg-[#c7e75d] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#5d5fef] focus:ring-offset-2; }
+  .button-ghost { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-[#dde2eb] bg-white/70 px-4 py-2.5 text-sm font-semibold text-[#0b1020] transition duration-200 hover:-translate-y-0.5 hover:border-[#adb5c5] hover:bg-white hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5d5fef] focus:ring-offset-2; }
+  .tag { @apply inline-flex items-center gap-1 rounded-full border border-[#dde2eb] bg-[#f4f6f9] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-[#71747e]; }
+  .soft-grid { background-image: linear-gradient(rgba(93,95,239,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(93,95,239,.045) 1px, transparent 1px); background-size: 24px 24px; }
+  .empty-state { background-image: radial-gradient(rgba(93,95,239,.09) 1px, transparent 1px); background-size: 15px 15px; background-position: -5px -5px; }
+}
+
+@media (max-width: 640px) {
+  .surface, .surface-dark { border-radius: 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
