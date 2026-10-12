@@ -1,10 +1,9 @@
-import { campaigns, comments, sampleAccount } from './sample-data';
 import type { Campaign, CommentItem, ConnectedAccount } from './types';
 
 export interface InstagramProvider {
   listAccounts(): Promise<ConnectedAccount[]>;
   listComments(accountId: string): Promise<CommentItem[]>;
-  publishReply(commentId: string, text: string, idempotencyKey: string): Promise<{ id: string; status: 'published' | 'queued' }>;
+  publishReply(commentId: string, text: string, idempotencyKey: string): Promise<{ id: string; status: 'published' }>;
 }
 
 export interface AdsProvider {
@@ -13,28 +12,21 @@ export interface AdsProvider {
 }
 
 export class MockInstagramProvider implements InstagramProvider {
-  async listAccounts() { return [sampleAccount]; }
-  async listComments(_accountId: string) { return comments; }
-  async publishReply(commentId: string, text: string, idempotencyKey: string) {
-    if (!commentId || !text.trim() || !idempotencyKey) throw new Error('A comment, reply, and idempotency key are required.');
-    return { id: `reply_${Date.now()}`, status: 'published' as const };
+  async listAccounts() { return []; }
+  async listComments(_accountId: string) { return []; }
+  async publishReply(_commentId: string, _text: string, idempotencyKey: string): Promise<never> {
+    if (!idempotencyKey.trim()) throw new Error('An idempotency key is required before publishing.');
+    throw new Error('Meta publishing is not configured. Connect an authorized account first.');
   }
 }
 
 export class MockAdsProvider implements AdsProvider {
-  async listCampaigns(_accountId: string) { return campaigns; }
-  async updateCampaignStatus(campaignId: string, status: 'Active' | 'Paused', confirmationToken: string) {
-    if (!confirmationToken) throw new Error('Explicit confirmation is required before changing campaign delivery.');
-    const campaign = campaigns.find((item) => item.id === campaignId);
-    if (!campaign) throw new Error('Campaign not found or not authorized for this workspace.');
-    return { ...campaign, status };
+  async listCampaigns(_accountId: string) { return []; }
+  async updateCampaignStatus(_campaignId: string, _status: 'Active' | 'Paused', confirmationToken: string): Promise<never> {
+    if (!confirmationToken.trim()) throw new Error('Explicit confirmation is required before changing campaign status.');
+    throw new Error('Meta advertising is not configured. Connect an authorized ad account first.');
   }
 }
 
-export function getInstagramProvider(): InstagramProvider {
-  return new MockInstagramProvider();
-}
-
-export function getAdsProvider(): AdsProvider {
-  return new MockAdsProvider();
-}
+export function getInstagramProvider(): InstagramProvider { return new MockInstagramProvider(); }
+export function getAdsProvider(): AdsProvider { return new MockAdsProvider(); }

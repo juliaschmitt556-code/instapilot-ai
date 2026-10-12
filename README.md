@@ -6,7 +6,7 @@ InstaPilot AI is a focused Instagram operations cockpit: advertising campaigns, 
 
 The working slice includes a premium responsive SaaS interface with marketing landing page, managed-account sign-in/onboarding surfaces, dashboard overview, connected accounts, campaign manager with confirmation dialog, new campaign validation surface, comments inbox with search/filter/detail/reply editor, AI agent configuration and multi-tone drafts, analytics charts, notifications/settings/billing-ready pages, and a managed Preview route manifest.
 
-The server seams include typed mock adapters for Instagram comments/replies and advertising campaigns, validated AI draft generation, explicit idempotency and confirmation inputs, a health endpoint, Meta webhook verification, ScrapeCreators public Instagram adapters, and a LangChain.js + ChatGroq public-data analysis route. Sample data is visibly labeled and never claimed to be live.
+The server seams include fail-closed provider adapters for Instagram comments/replies and advertising campaigns, validated AI draft generation, explicit idempotency and confirmation inputs, a health endpoint, Meta webhook verification, ScrapeCreators public Instagram adapters, and a LangChain.js + ChatGroq public-data analysis route. The product does not seed fabricated accounts, campaigns, comments, metrics, or AI drafts.
 
 ## Local development
 
@@ -28,7 +28,7 @@ pnpm build
 
 Copy `.env.example` to `.env.local` for local work. Never commit real credentials. Managed Preview injects the project’s server/database values. Provider secrets stay server-side.
 
-`APP_DATA_MODE=sample` keeps the local experience honest until provider credentials and eligible Meta accounts are available. A missing provider key produces a clear configuration response rather than fabricated live data.
+`APP_DATA_MODE=unconfigured` keeps the runtime fail-closed until provider credentials and eligible Meta accounts are available. A missing provider key produces a clear configuration response rather than fabricated live data.
 
 ## ScrapeCreators public Instagram research
 

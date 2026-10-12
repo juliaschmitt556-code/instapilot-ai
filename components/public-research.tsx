@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ArrowUpRight, Search, Sparkles } from 'lucide-react';
 
 export function PublicResearch() {
-  const [query, setQuery] = useState('linen set');
+  const [query, setQuery] = useState('');
   const [kind, setKind] = useState<'search' | 'popular' | 'reels'>('popular');
   const [result, setResult] = useState('');
   const [status, setStatus] = useState('');

@@ -1,4 +1,3 @@
-import { replyDrafts } from './sample-data';
 import type { ReplyDraft } from './types';
 
 export type ReplyContext = {
@@ -13,10 +12,6 @@ const prohibitedClaims = [/guarantee/i, /90% off/i, /medical/i, /private/i];
 
 export function containsUnsafeClaim(text: string) {
   return prohibitedClaims.some((pattern) => pattern.test(text));
-}
-
-function safeDrafts() {
-  return replyDrafts.map((draft) => ({ ...draft, text: containsUnsafeClaim(draft.text) ? 'I can help with that. Please send us a DM so our team can confirm the details securely.' : draft.text }));
 }
 
 async function generateWithGroq(context: ReplyContext): Promise<ReplyDraft[]> {
@@ -39,19 +34,13 @@ async function generateWithGroq(context: ReplyContext): Promise<ReplyDraft[]> {
   if (!content) throw new Error('Groq returned no draft content.');
   const parsed = JSON.parse(content) as { drafts?: ReplyDraft[] };
   if (!Array.isArray(parsed.drafts) || parsed.drafts.length === 0) throw new Error('Groq returned an invalid draft shape.');
-  return parsed.drafts.filter((draft) => typeof draft.text === 'string' && !containsUnsafeClaim(draft.text)).slice(0, 3);
+  const safe = parsed.drafts.filter((draft) => typeof draft.text === 'string' && !containsUnsafeClaim(draft.text)).slice(0, 3);
+  if (!safe.length) throw new Error('Groq returned no safe draft content.');
+  return safe;
 }
 
 export async function generateReplyDrafts(context: ReplyContext): Promise<ReplyDraft[]> {
   if (!context.comment.trim()) throw new Error('The original comment is required to draft a reply.');
-  if (process.env.GROQ_API_KEY) {
-    try {
-      const drafts = await generateWithGroq(context);
-      if (drafts.length) return drafts;
-    } catch (error) {
-      console.warn('Groq draft generation unavailable; using safe local fallback.', error instanceof Error ? error.message : error);
-    }
-  }
-  const matches = safeDrafts().filter((draft) => draft.tone.toLowerCase().includes(context.tone.toLowerCase()) || context.tone === 'Any');
-  return matches.length ? matches : safeDrafts();
+  if (!process.env.GROQ_API_KEY) throw new Error('Groq is not configured. Add GROQ_API_KEY on the server.');
+  return generateWithGroq(context);
 }

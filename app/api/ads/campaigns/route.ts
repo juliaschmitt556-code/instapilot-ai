@@ -7,5 +7,5 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
   const accountId = new URL(request.url).searchParams.get('accountId');
   if (!accountId) return NextResponse.json({ error: 'An authorized accountId is required.' }, { status: 400 });
-  return NextResponse.json({ data: await getAdsProvider().listCampaigns(accountId), mode: process.env.APP_DATA_MODE === 'live' ? 'live' : 'sample' });
+  return NextResponse.json({ data: await getAdsProvider().listCampaigns(accountId), mode: process.env.APP_DATA_MODE === 'live' ? 'live' : 'unconfigured' });
 }

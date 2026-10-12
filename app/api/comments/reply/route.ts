@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   try {
     const input = replyRequestSchema.parse(await request.json());
     const result = await getInstagramProvider().publishReply(input.commentId, input.text, input.idempotencyKey);
-    return NextResponse.json({ data: result, actor: user.openId, mode: process.env.APP_DATA_MODE === 'live' ? 'live' : 'sample' });
+    return NextResponse.json({ data: result, actor: user.openId, mode: process.env.APP_DATA_MODE === 'live' ? 'live' : 'unconfigured' });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Reply could not be published.';
     return NextResponse.json({ error: message }, { status: 400 });

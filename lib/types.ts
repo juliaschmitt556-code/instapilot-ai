@@ -1,4 +1,4 @@
-export type DataMode = 'sample' | 'live';
+export type DataMode = 'unconfigured' | 'live';
 
 export type ConnectedAccount = {
   id: string;
@@ -57,5 +57,5 @@ export type Metric = {
   direction: 'up' | 'down' | 'flat';
   description: string;
   accent: 'lime' | 'indigo' | 'coral' | 'ink';
-  source: 'Advertising' | 'Organic' | 'Sample';
+  source: 'Advertising' | 'Organic' | 'Unavailable';
 };

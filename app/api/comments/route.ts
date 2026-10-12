@@ -8,5 +8,5 @@ export async function GET(request: Request) {
   const accountId = new URL(request.url).searchParams.get('accountId');
   if (!accountId) return NextResponse.json({ error: 'An authorized accountId is required.' }, { status: 400 });
   const data = await getInstagramProvider().listComments(accountId);
-  return NextResponse.json({ data, mode: process.env.APP_DATA_MODE === 'live' ? 'live' : 'sample', accessModel: 'Authorized accessible content only.' });
+  return NextResponse.json({ data, mode: process.env.APP_DATA_MODE === 'live' ? 'live' : 'unconfigured', accessModel: 'Authorized accessible content only.' });
 }
