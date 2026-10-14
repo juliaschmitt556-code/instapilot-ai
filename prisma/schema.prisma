@@ -1,0 +1,264 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PRISMA_DATABASE_URL")
+}
+
+model Workspace {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  members   WorkspaceMember[]
+  accounts  ConnectedAccount[]
+  campaigns Campaign[]
+  comments  Comment[]
+  drafts    AiReplyDraft[]
+  rules     AutomationRule[]
+  audits    AuditLog[]
+  runs        AgentRun[]
+  notifications Notification[]
+  usageEvents UsageEvent[]
+  publicMedia PublicMedia[]
+  publicComments PublicComment[]
+  credentials MarketingCredential[]
+  settings    WorkspaceSettings?
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  role        String   @default("member")
+  createdAt   DateTime @default(now()) @map("created_at")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@unique([workspaceId, userId], map: "workspace_members_unique_idx")
+  @@map("workspace_members")
+}
+
+model ConnectedAccount {
+  id                   String   @id @default(uuid()) @db.Uuid
+  workspaceId          String   @map("workspace_id") @db.Uuid
+  username             String
+  displayName          String   @map("display_name")
+  status               String
+  encryptedCredentialRef String? @map("encrypted_credential_ref")
+  tokenExpiresAt       DateTime? @map("token_expires_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+  workspace            Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  campaigns            Campaign[]
+  comments             Comment[]
+  @@index([workspaceId], map: "connected_accounts_workspace_idx")
+  @@map("connected_accounts")
+}
+
+model Campaign {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  accountId   String   @map("account_id") @db.Uuid
+  externalId  String?  @map("external_id")
+  name        String
+  objective   String
+  status      String
+  budgetCents Int?     @map("budget_cents")
+  syncedAt    DateTime? @map("synced_at")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  account     ConnectedAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  @@index([accountId], map: "campaigns_account_idx")
+  @@map("campaigns")
+}
+
+model Comment {
+  id             String   @id @default(uuid()) @db.Uuid
+  workspaceId    String   @map("workspace_id") @db.Uuid
+  accountId      String   @map("account_id") @db.Uuid
+  externalId     String   @map("external_id")
+  username       String
+  body           String
+  postExternalId String?  @map("post_external_id")
+  replyStatus    String   @default("needs_reply") @map("reply_status")
+  createdAt      DateTime @default(now()) @map("created_at")
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  account        ConnectedAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  drafts         AiReplyDraft[]
+  @@unique([accountId, externalId], map: "comments_external_idx")
+  @@index([workspaceId, replyStatus, createdAt], map: "comments_inbox_idx")
+  @@map("comments")
+}
+
+model AiReplyDraft {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  commentId   String   @map("comment_id") @db.Uuid
+  tone        String
+  body        String
+  confidence  Int?
+  approvedAt  DateTime? @map("approved_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  comment     Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  @@map("ai_reply_drafts")
+}
+
+model AutomationRule {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  accountId   String   @map("account_id") @db.Uuid
+  name        String
+  mode        String   @default("approval")
+  active      Boolean  @default(true)
+  configJson  String?  @map("config_json")
+  createdAt   DateTime @default(now()) @map("created_at")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@map("automation_rules")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  actorUserId String?  @map("actor_user_id") @db.Uuid
+  action      String
+  targetType  String   @map("target_type")
+  targetId    String?  @map("target_id") @db.Uuid
+  metadataJson String? @map("metadata_json")
+  createdAt   DateTime @default(now()) @map("created_at")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@map("audit_logs")
+}
+
+model AgentRun {
+  id             String   @id @default(uuid()) @db.Uuid
+  workspaceId    String   @map("workspace_id") @db.Uuid
+  provider       String
+  task           String
+  status         String   @default("completed")
+  approvalRequired Boolean @default(true) @map("approval_required")
+  inputJson      String?  @map("input_json")
+  outputJson     String?  @map("output_json")
+  createdAt      DateTime @default(now()) @map("created_at")
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@index([workspaceId, createdAt], map: "agent_runs_workspace_idx")
+  @@map("agent_runs")
+}
+
+model IdempotencyKey {
+  key       String   @id
+  scope     String
+  response  String?
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime? @map("expires_at")
+  @@unique([scope, key], map: "idempotency_scope_key_idx")
+  @@map("idempotency_keys")
+}
+
+model WebhookEvent {
+  id          String   @id @default(uuid()) @db.Uuid
+  provider    String
+  externalId  String   @map("external_id")
+  eventType   String   @map("event_type")
+  payloadJson String   @map("payload_json")
+  processedAt DateTime? @map("processed_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  @@unique([provider, externalId], map: "webhook_events_provider_external_idx")
+  @@map("webhook_events")
+}
+
+model Notification {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  type        String
+  title       String
+  body        String
+  readAt      DateTime? @map("read_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@index([workspaceId, readAt, createdAt], map: "notifications_workspace_idx")
+  @@map("notifications")
+}
+
+model UsageEvent {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  metric      String
+  quantity    Int      @default(1)
+  periodStart DateTime @map("period_start")
+  createdAt   DateTime @default(now()) @map("created_at")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@index([workspaceId, metric, periodStart], map: "usage_workspace_metric_idx")
+  @@map("usage_events")
+}
+
+model UserProfile {
+  id        String   @id @db.Uuid
+  email     String?
+  fullName  String?  @map("full_name")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@map("user_profiles")
+}
+
+model PublicMedia {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  provider    String   @default("scrapecreators")
+  externalId  String   @map("external_id")
+  sourceUrl   String   @map("source_url")
+  handle      String?
+  mediaType   String?  @map("media_type")
+  caption     String?
+  collectedAt DateTime @default(now()) @map("collected_at")
+  freshness   String   @default("live")
+  rawJson     String?  @map("raw_json")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@unique([workspaceId, provider, externalId], map: "public_media_source_idx")
+  @@index([workspaceId, handle], map: "public_media_handle_idx")
+  @@map("public_media")
+}
+
+model PublicComment {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  mediaId     String   @map("media_id") @db.Uuid
+  provider    String   @default("scrapecreators")
+  externalId  String   @map("external_id")
+  username    String?
+  body        String
+  category    String?
+  collectedAt DateTime @default(now()) @map("collected_at")
+  rawJson     String?  @map("raw_json")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@unique([workspaceId, provider, externalId], map: "public_comments_external_idx")
+  @@index([mediaId, collectedAt], map: "public_comments_media_idx")
+  @@map("public_comments")
+}
+
+model MarketingCredential {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  provider    String
+  accountId   String   @map("account_id")
+  accessToken String   @map("access_token")
+  expiresAt   DateTime? @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@unique([workspaceId, provider, accountId], map: "marketing_credentials_scope_idx")
+  @@map("marketing_credentials")
+}
+
+model WorkspaceSettings {
+  workspaceId String   @id @map("workspace_id") @db.Uuid
+  brandName   String?  @map("brand_name")
+  timezone    String   @default("UTC")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@map("workspace_settings")
+}
+
+// New relation fields kept in Prisma's generated client for complete workspace reads.
+// These are additive and map to existing tables when present.
+// prisma:ignore
