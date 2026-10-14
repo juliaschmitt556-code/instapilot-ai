@@ -1,5 +1,7 @@
 import type { Campaign, CommentItem, ConnectedAccount } from './types'
 import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/prisma'
+import { InstagramGraphClient } from '@/lib/instagram-graph'
 
 export interface InstagramProvider {
   listAccounts(): Promise<ConnectedAccount[]>
@@ -36,10 +38,18 @@ export class SupabaseInstagramProvider implements InstagramProvider {
     return (data ?? []).map((comment) => ({ id: comment.id, username: comment.username, initials: comment.username.slice(0, 2).toUpperCase(), timestamp: comment.created_at, text: comment.body, post: comment.post_external_id ?? 'Instagram post', postType: 'Photo' as const, sentiment: 'Question' as const, priority: 'Normal' as const, replyStatus: comment.reply_status, color: '' }))
   }
 
-  async publishReply(commentId: string, text: string, idempotencyKey: string): Promise<never> {
+  async publishReply(commentId: string, text: string, idempotencyKey: string) {
     if (!idempotencyKey.trim()) throw new Error('An idempotency key is required before publishing.')
     if (!text.trim()) throw new Error('Reply text is required.')
-    throw new Error('Instagram publishing requires an authorized Meta account connection.')
+    const existing = await prisma.idempotencyKey.findUnique({ where: { key: idempotencyKey } })
+    if (existing?.response) return JSON.parse(existing.response) as { id: string; status: 'published' }
+
+    const credential = await prisma.marketingCredential.findFirst({ where: { provider: 'instagram' }, orderBy: { updatedAt: 'desc' } })
+    if (!credential) throw new Error('Instagram publishing requires an authorized Meta account connection.')
+    const result = await new InstagramGraphClient(credential.accessToken).replyToComment(commentId, text)
+    const response = { id: result.id, status: 'published' as const }
+    await prisma.idempotencyKey.upsert({ where: { key: idempotencyKey }, create: { key: idempotencyKey, scope: `instagram:reply:${commentId}`, response: JSON.stringify(response) }, update: { response: JSON.stringify(response) } })
+    return response
   }
 }
 
