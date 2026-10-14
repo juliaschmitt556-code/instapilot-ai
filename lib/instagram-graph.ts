@@ -1,5 +1,3 @@
-import 'server-only'
-
 const GRAPH_URL = `https://graph.facebook.com/${process.env.META_GRAPH_API_VERSION ?? 'v21.0'}`
 
 export class InstagramGraphClient {
@@ -17,12 +15,26 @@ export class InstagramGraphClient {
     return payload as T
   }
 
-  getComment(commentId: string) { return this.request<Record<string, unknown>>(commentId, undefined, { fields: 'id,text,username,timestamp,media' }) }
+  getComment(commentId: string) { return this.request<Record<string, unknown>>(commentId, undefined, { fields: 'id,text,username,timestamp,media,hidden' }) }
+
+  listComments(mediaId: string, limit = 100, after?: string) {
+    return this.request<{ data: Array<Record<string, unknown>>; paging?: Record<string, unknown> }>(`${mediaId}/comments`, undefined, {
+      fields: 'id,text,username,timestamp,hidden,like_count,replies{id,text,username,timestamp}',
+      limit: String(Math.min(Math.max(limit, 1), 100)),
+      after,
+    })
+  }
+
   replyToComment(commentId: string, message: string) {
     if (!commentId.trim() || !message.trim()) throw new Error('Comment id and reply message are required.')
-    return this.request<{ id: string }>(`${commentId}/replies`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ message: message.trim() }) })
+    return this.request<{ id: string }>(`${commentId}/replies`, { method: 'POST' }, { message: message.trim() })
   }
-  hideComment(commentId: string, hidden = true) { return this.request<Record<string, unknown>>(commentId, { method: 'POST' }, { hide: hidden }) }
-  deleteComment(commentId: string) { return this.request<Record<string, unknown>>(commentId, { method: 'DELETE' }) }
-  listMedia(igUserId: string, limit = 25) { return this.request<{ data: Array<Record<string, unknown>> }>(`${igUserId}/media`, undefined, { fields: 'id,caption,media_type,media_url,permalink,timestamp', limit: String(limit) }) }
+
+  hideComment(commentId: string, hidden = true) { return this.request<Record<string, unknown>>(`${commentId}`, { method: 'POST' }, { hide: hidden }) }
+  deleteComment(commentId: string) { return this.request<Record<string, unknown>>(`${commentId}`, { method: 'DELETE' }) }
+  likeComment(commentId: string) { return this.request<Record<string, unknown>>(`${commentId}/likes`, { method: 'POST' }) }
+  unlikeComment(commentId: string) { return this.request<Record<string, unknown>>(`${commentId}/likes`, { method: 'DELETE' }) }
+  getProfile(igUserId: string) { return this.request<Record<string, unknown>>(igUserId, undefined, { fields: 'id,username,name,biography,website,profile_picture_url,followers_count,follows_count,media_count' }) }
+  getMedia(mediaId: string) { return this.request<Record<string, unknown>>(mediaId, undefined, { fields: 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,like_count,comments_count,owner' }) }
+  listMedia(igUserId: string, limit = 25, after?: string) { return this.request<{ data: Array<Record<string, unknown>>; paging?: Record<string, unknown> }>(`${igUserId}/media`, undefined, { fields: 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,like_count,comments_count', limit: String(Math.min(Math.max(limit, 1), 100)), after }) }
 }
