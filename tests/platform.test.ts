@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { containsUnsafeClaim, generateReplyDrafts } from '@/lib/ai';
-import { MockAdsProvider, MockInstagramProvider } from '@/lib/adapters';
+import { SupabaseAdsProvider, SupabaseInstagramProvider } from '@/lib/adapters';
 
 describe('InstaPilot safety seams', () => {
   it('flags unsupported or unsafe claims', () => {
@@ -16,13 +16,13 @@ describe('InstaPilot safety seams', () => {
   });
 
   it('prevents publishing without an idempotency key', async () => {
-    const provider = new MockInstagramProvider();
+    const provider = new SupabaseInstagramProvider();
     await expect(provider.publishReply('comment', 'Reply', '')).rejects.toThrow('idempotency');
   });
 
   it('requires explicit confirmation for campaign status changes', async () => {
-    const provider = new MockAdsProvider();
+    const provider = new SupabaseAdsProvider();
     await expect(provider.updateCampaignStatus('cmp_01', 'Paused', '')).rejects.toThrow('confirmation');
-    await expect(provider.updateCampaignStatus('cmp_01', 'Paused', 'confirmed-by-owner')).rejects.toThrow('not configured');
+    await expect(provider.updateCampaignStatus('cmp_01', 'Paused', 'confirmed-by-owner')).rejects.toThrow('cookies');
   });
 });
